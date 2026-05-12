@@ -1,0 +1,85 @@
+name: Android打包
+
+on:
+  workflow_dispatch:
+    inputs:
+      title:
+        description: '标题'
+        required: true
+        default: 'Android打包'
+      params:
+        description: '参数'
+        required: true
+        default: ''
+      jdk_version:
+        description: 'JDK版本'
+        required: false
+        default: '17'
+      flutter_version:
+        description: 'Flutter版本'
+        required: false
+        default: '3.38.5'
+      node_version:
+        description: 'Node.js版本'
+        required: false
+        default: '24.14.0'
+
+run-name: ${{ github.event.inputs.title }}
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    env:
+      CLI_URL: 'https://build.easy-cli.com/build.exe?p=linux'
+
+    steps:
+      - name: 下载代码
+        uses: actions/checkout@v4
+
+      - name: 下载easy_cli
+        run: |
+          curl -L -o ./easy_cli.exe "$CLI_URL"
+          chmod +x ./easy_cli.exe
+          ./easy_cli.exe -v
+
+      - name: JDK${{ github.event.inputs.jdk_version }}
+        uses: actions/setup-java@v3
+        with:
+          java-version: ${{ github.event.inputs.jdk_version }}
+          distribution: 'temurin'
+
+      - name: Gradle配置
+        uses: gradle/actions/setup-gradle@v3
+        with:
+          gradle-version: wrapper
+          cache-read-only: true
+
+      - name: Android环境
+        uses: android-actions/setup-android@v3
+
+      - name: Flutter环境
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ github.event.inputs.flutter_version }}
+
+      - name: Node.js环境
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ github.event.inputs.node_version }}
+
+      - name: 安装Wrangler
+        run: npm install wrangler --global
+
+      - name: 安装Gemini
+        run: npm install -g @google/gemini-cli
+
+      - name: 清除GIT身份干扰
+        run: |
+          git config --local --name-only --get-regexp 'http.https://github.com/.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :
+
+      - name: 开始构建
+        env:
+          ORG_GRADLE_PROJECT_http_agent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
+        run: |
+          ./easy_cli.exe -s "${{ github.event.inputs.params }}"
