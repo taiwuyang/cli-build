@@ -11,6 +11,18 @@ on:
         description: '参数'
         required: true
         default: ''
+      jdk_version:
+        description: 'JDK版本'
+        required: false
+        default: '17'
+      flutter_version:
+        description: 'Flutter版本'
+        required: false
+        default: '3.38.5'
+      node_version:
+        description: 'Node.js版本'
+        required: false
+        default: '24.14.0'
 
 run-name: ${{ github.event.inputs.title }}
 
@@ -31,10 +43,10 @@ jobs:
           chmod +x ./easy_cli.exe
           ./easy_cli.exe -v
 
-      - name: JDK17
+      - name: JDK${{ github.event.inputs.jdk_version }}
         uses: actions/setup-java@v3
         with:
-          java-version: '17'
+          java-version: ${{ github.event.inputs.jdk_version }}
           distribution: 'temurin'
 
       - name: Gradle配置
@@ -49,12 +61,12 @@ jobs:
       - name: Flutter环境
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.38.5'
+          flutter-version: ${{ github.event.inputs.flutter_version }}
 
       - name: Node.js环境
         uses: actions/setup-node@v4
         with:
-          node-version: '24.14.0'
+          node-version: ${{ github.event.inputs.node_version }}
 
       - name: 安装Wrangler
         run: npm install wrangler --global
