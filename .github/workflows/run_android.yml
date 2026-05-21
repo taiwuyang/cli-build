@@ -23,6 +23,16 @@ on:
         description: 'Node.js版本'
         required: false
         default: '24.14.0'
+      gemini:
+        description: '是否安装Gemini'
+        required: false
+        type: boolean
+        default: true
+      opencode:
+        description: '是否安装OpenCode'
+        required: false
+        type: boolean
+        default: true
 
 run-name: ${{ github.event.inputs.title }}
 
@@ -58,12 +68,12 @@ jobs:
       - name: Android环境
         uses: android-actions/setup-android@v3
 
-      - name: Flutter环境
+      - name: Flutter${{ github.event.inputs.flutter_version }}
         uses: subosito/flutter-action@v2
         with:
           flutter-version: ${{ github.event.inputs.flutter_version }}
 
-      - name: Node.js环境
+      - name: Node${{ github.event.inputs.node_version }}
         uses: actions/setup-node@v4
         with:
           node-version: ${{ github.event.inputs.node_version }}
@@ -72,7 +82,12 @@ jobs:
         run: npm install wrangler --global
 
       - name: 安装Gemini
+        if: ${{ inputs.gemini }}
         run: npm install -g @google/gemini-cli
+
+      - name: 安装OpenCode
+        if: ${{ inputs.opencode }}
+        run: npm install -g opencode-ai
 
       - name: 清除GIT身份干扰
         run: |
