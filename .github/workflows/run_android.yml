@@ -81,14 +81,9 @@ jobs:
       - name: 安装Wrangler
         run: npm install wrangler --global
 
-      - name: 安装Gemini
-        if: ${{ inputs.gemini }}
-        run: npm install -g @google/gemini-cli
-
       - name: 安装OpenCode
         if: ${{ inputs.opencode }}
         run: npm install -g opencode-ai
-
       - name: 清除GIT身份干扰
         run: |
           git config --local --name-only --get-regexp 'http.https://github.com/.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :
