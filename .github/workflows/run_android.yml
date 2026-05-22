@@ -23,16 +23,6 @@ on:
         description: 'Node.js版本'
         required: false
         default: '24.14.0'
-      gemini:
-        description: '是否安装Gemini'
-        required: false
-        type: boolean
-        default: true
-      opencode:
-        description: '是否安装OpenCode'
-        required: false
-        type: boolean
-        default: true
 
 run-name: ${{ github.event.inputs.title }}
 
@@ -81,9 +71,6 @@ jobs:
       - name: 安装Wrangler
         run: npm install wrangler --global
 
-      - name: 安装OpenCode
-        if: ${{ inputs.opencode }}
-        run: npm install -g opencode-ai
       - name: 清除GIT身份干扰
         run: |
           git config --local --name-only --get-regexp 'http.https://github.com/.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :
