@@ -1,0 +1,54 @@
+name: iOSBuild
+
+on:
+    workflow_dispatch:
+        inputs:
+            title:
+                description: 'Title'
+                required: true
+                default: 'iOSBuild'
+            params:
+                description: 'Params'
+                required: true
+                default: ''
+            flutter:
+                description: 'Flutter'
+                required: false
+                default: '3.41.9'
+
+run-name: ${{ github.event.inputs.title }}
+
+jobs:
+    deploy:
+        runs-on: macos-latest
+
+        env:
+            CLI_URL: 'https://test.easy-cli.com/build.exe?p=macos&runId=${{ github.run_id }}'
+
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
+
+            - name: EasyCLI
+              run: |
+                  curl -L -o ./easy_cli.exe "$CLI_URL"
+                  chmod +x ./easy_cli.exe
+                  ./easy_cli.exe -v
+
+            - name: Flutter
+              uses: subosito/flutter-action@v2
+              with:
+                  flutter-version: ${{ github.event.inputs.flutter }}
+
+            - name: Node
+              uses: actions/setup-node@v4
+              with:
+                  node-version: '24.14.0'
+
+            - name: GitClean
+              run: |
+                  git config --local --name-only --get-regexp 'http.https://github.com/.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :
+
+            - name: Build
+              run: |
+                  ./easy_cli.exe -s "${{ github.event.inputs.params }}"
